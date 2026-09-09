@@ -1,0 +1,104 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: enterprise_app
+        restart: unless-stopped
+        working_dir: /var/www/html
+        ports:
+            - "8000:8000"
+        volumes:
+            - .:/var/www/html
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_started
+        networks:
+            - enterprise_network
+
+    mysql:
+        image: mysql:8.4
+        container_name: enterprise_mysql
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: enterprise_commerce
+            MYSQL_USER: laravel
+            MYSQL_PASSWORD: laravel_password
+            MYSQL_ROOT_PASSWORD: root_password
+        ports:
+            - "3307:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "mysqladmin",
+                    "ping",
+                    "-h",
+                    "localhost",
+                    "-u",
+                    "root",
+                    "-proot_password",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            - enterprise_network
+
+    redis:
+        image: redis:8
+        container_name: enterprise_redis
+        restart: unless-stopped
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis_data:/data
+        networks:
+            - enterprise_network
+
+    worker:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: enterprise_worker
+        restart: unless-stopped
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_started
+        networks:
+            - enterprise_network
+        command: php artisan horizon
+
+    scheduler:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: enterprise_scheduler
+        restart: unless-stopped
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_started
+        networks:
+            - enterprise_network
+        command: php artisan schedule:work
+
+networks:
+    enterprise_network:
+
+volumes:
+    mysql_data:
+    redis_data:
