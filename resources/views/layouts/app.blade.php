@@ -52,9 +52,9 @@
                             📦 My Orders
                         </a>
 
-                        <!-- <a href="{{ route('customer.notifications') }}" class="btn btn-outline-light btn-sm">
-                                    🔔
-                                </a> -->
+                        <a href="{{ route('customer.notifications') }}" class="btn btn-outline-light btn-sm">
+                            🔔
+                        </a>
 
 
                         {{-- ================================= --}}

@@ -94,4 +94,14 @@ class WarehouseWebController extends Controller
 
         return view('warehouse.orders', compact('orders'));
     }
+    public function shipments(): View
+    {
+        $shipments = \App\Models\Shipment::with([
+            'order.user',
+        ])
+            ->latest()
+            ->get();
+
+        return view('warehouse.shipments', compact('shipments'));
+    }
 }

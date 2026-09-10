@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            <!-- {{-- Notifications --}}
+            {{-- Notifications --}}
                 <div class="col-md-6 col-lg-3">
                     <div class="card h-100 shadow-sm">
                         <div class="card-body">
@@ -79,7 +79,7 @@
                             </a>
                         </div>
                     </div>
-                </div> -->
+                </div>
 
         </div>
 

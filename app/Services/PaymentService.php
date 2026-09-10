@@ -8,6 +8,7 @@ use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use App\Models\InventoryReservation;
+use App\Events\PaymentCaptured;
 
 
 class PaymentService
@@ -79,6 +80,7 @@ class PaymentService
         string $razorpaySignature
     ): Payment {
         return DB::transaction(function () use ($paymentId, $razorpayOrderId, $razorpayPaymentId, $razorpaySignature) {
+
             $payment = Payment::with('order')
                 ->lockForUpdate()
                 ->findOrFail($paymentId);
@@ -94,7 +96,7 @@ class PaymentService
             }
 
             /*
-             * If already paid, return it.
+             * If already paid, do nothing.
              * This prevents duplicate processing.
              */
             if ($payment->status === 'paid') {
@@ -134,10 +136,9 @@ class PaymentService
             ]);
 
             /*
-             * Consume active inventory reservations
-             * belonging to this order.
+             * Consume active inventory reservations.
              */
-            $reservations = \App\Models\InventoryReservation::where(
+            $reservations = InventoryReservation::where(
                 'order_id',
                 $order->id
             )
@@ -150,6 +151,18 @@ class PaymentService
                     $reservation->id
                 );
             }
+
+            /*
+             * Payment is successfully captured.
+             *
+             * PaymentCaptured implements
+             * ShouldDispatchAfterCommit, so the event
+             * will only be handled after this transaction
+             * successfully commits.
+             */
+            PaymentCaptured::dispatch(
+                $payment->fresh('order')
+            );
 
             return $payment->fresh('order');
         });

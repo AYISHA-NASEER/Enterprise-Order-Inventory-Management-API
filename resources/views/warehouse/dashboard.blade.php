@@ -60,7 +60,7 @@
                             status of orders.
                         </p>
 
-                        <a href="#" class="btn btn-success">
+                        <a href="{{ route('warehouse.shipments') }}" class="btn btn-success">
                             Manage Shipments
                         </a>
 
