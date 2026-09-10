@@ -65,21 +65,21 @@
             </div>
 
             {{-- Notifications --}}
-                <div class="col-md-6 col-lg-3">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h4>🔔</h4>
-                            <h5 class="card-title">Notifications</h5>
-                            <p class="card-text">
-                                View your payment and order notifications.
-                            </p>
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h4>🔔</h4>
+                        <h5 class="card-title">Notifications</h5>
+                        <p class="card-text">
+                            View your payment and order notifications.
+                        </p>
 
-                            <a href="{{ route('customer.notifications') }}" class="btn btn-secondary">
-                                Notifications
-                            </a>
-                        </div>
+                        <a href="{{ route('customer.notifications') }}" class="btn btn-secondary">
+                            Notifications
+                        </a>
                     </div>
                 </div>
+            </div>
 
         </div>
 

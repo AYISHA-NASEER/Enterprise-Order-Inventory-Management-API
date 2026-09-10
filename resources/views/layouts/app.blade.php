@@ -90,11 +90,11 @@
                             📦 Products
                         </a>
 
-                        <a href="/inventory" class="btn btn-outline-light btn-sm">
+                        <a href="{{ route('admin.inventory.index') }}" class="btn btn-outline-light btn-sm">
                             Inventory
                         </a>
 
-                        <a href="/orders" class="btn btn-outline-light btn-sm">
+                        <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-light btn-sm">
                             Orders
                         </a>
 

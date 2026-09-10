@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductWebController;
 use App\Http\Controllers\WebAuthController;
 use App\Http\Controllers\CustomerWebController;
 use App\Http\Controllers\WarehouseWebController;
+use App\Http\Controllers\AdminWebController;
 
 Route::get('/payment-test/{paymentId}', function (int $paymentId) {
 
@@ -17,6 +18,12 @@ Route::get('/payment-test/{paymentId}', function (int $paymentId) {
 
 });
 
+
+
+
+Route::get('/', function () {
+    return view('auth.register');
+});
 
 
 
@@ -44,9 +51,26 @@ Route::get('/dashboard', function () {
     ->middleware(['auth', 'role:admin'])
     ->name('dashboard');
 
+
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+
+    Route::get('/admin/orders', [AdminWebController::class, 'index'])
+        ->name('admin.orders.index');
+
+    Route::get('/admin/payments', [AdminWebController::class, 'payments'])
+        ->name('admin.payments.index');
+
+    Route::get('/admin/payments/{payment}', [AdminWebController::class, 'paymentShow'])
+        ->name('admin.payments.show');
+
+    Route::get('/admin/inventory', [AdminWebController::class, 'inventory'])
+        ->name('admin.inventory.index');
+
+});
+
+
 Route::middleware('auth')->group(function () {
-
-
 
     Route::get('/products', [ProductWebController::class, 'index'])
         ->name('products.index');
@@ -143,6 +167,12 @@ Route::middleware(['auth', 'role:warehouse'])->group(function () {
     )->name('warehouse.shipments');
 });
 
+Route::middleware('auth')->group(function () {
+
+    Route::get('/admin/orders', [AdminWebController::class, 'index'])
+        ->name('admin.orders.index');
+
+});
 
 
 

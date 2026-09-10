@@ -23,7 +23,7 @@ class ProductWebController extends Controller
             ->latest()
             ->get();
 
-        return view('products.index', compact('products'));
+        return view('admin.products.index', compact('products'));
     }
 
     public function create(): View
