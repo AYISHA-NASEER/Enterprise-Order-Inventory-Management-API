@@ -60,6 +60,19 @@ services:
         networks:
             - enterprise_network
 
+    shipping:
+        image: php:8.5-cli
+        container_name: enterprise_shipping
+        restart: unless-stopped
+        working_dir: /var/www/html
+        volumes:
+            - ./mock-shipping:/var/www/html/mock-shipping
+        ports:
+            - "3001:3001"
+        networks:
+            - enterprise_network
+        command: php -S 0.0.0.0:3001 mock-shipping/server.php
+
     worker:
         build:
             context: .
