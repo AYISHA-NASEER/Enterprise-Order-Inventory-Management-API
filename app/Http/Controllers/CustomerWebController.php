@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Models\Category;
 use App\Services\CartService;
+use App\Services\CategoryService;
 use App\Services\CheckoutService;
 use App\Services\PaymentService;
+use App\Services\ProductService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,7 +19,10 @@ class CustomerWebController extends Controller
 {
     public function __construct(
         private CartService $cartService,
-        private CheckoutService $checkoutService
+        private CheckoutService $checkoutService,
+        private ProductService $productService,
+        private CategoryService $categoryService
+
     ) {
     }
 
@@ -26,14 +31,50 @@ class CustomerWebController extends Controller
         return view('customer.dashboard');
     }
 
-    public function products(): View
+    public function products(Request $request): View
     {
-        $products = Product::where('status', 'active')
-            ->with('category')
-            ->latest()
-            ->get();
+        $products = $this->productService->list([
+            'search' => $request->input('search'),
+            'category' => $request->input('category'),
+            'status' => 'active',
+            'sort_by' => $request->input('sort_by', 'created_at'),
+            'sort_dir' => $request->input('sort_dir', 'desc'),
+            'per_page' => min(
+                max((int) $request->input('per_page', 6), 1),
+                50
+            ),
+            'page' => max(
+                (int) $request->input('page', 1),
+                1
+            ),
+        ]);
 
-        return view('customer.products.index', compact('products'));
+        $categories = Category::orderBy('name')->get();
+
+        return view(
+            'customer.products.index',
+            compact('products', 'categories')
+        );
+    }
+    public function categories(): View
+    {
+        $categories = Category::orderBy('name')->get();
+
+        return view('customer.categories.index', compact('categories'));
+    }
+
+    public function storeCategory(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'unique:categories,slug'],
+        ]);
+
+        $this->categoryService->create($validated);
+
+        return redirect()
+            ->route('customer.categories')
+            ->with('success', 'Category created successfully.');
     }
 
     public function addToCart(
@@ -229,7 +270,7 @@ class CustomerWebController extends Controller
     }
     public function notifications(): View
     {
-        
+
 
         $notifications = auth()->user()
             ->notifications()

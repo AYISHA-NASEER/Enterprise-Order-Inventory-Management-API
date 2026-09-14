@@ -89,6 +89,9 @@
                         <a href="{{ route('products.index') }}" class="btn btn-outline-light btn-sm">
                             📦 Products
                         </a>
+                        <a href="{{ route('admin.categories') }}" class="btn btn-outline-light btn-sm">
+                            category
+                        </a>
 
                         <a href="{{ route('admin.inventory.index') }}" class="btn btn-outline-light btn-sm">
                             Inventory

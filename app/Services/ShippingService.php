@@ -23,14 +23,27 @@ class ShippingService
             );
         }
 
+        // Ask the external shipping API for the latest status
         $response = $this->shippingClient->getShipment(
             $shipment->provider_shipment_id
         );
 
+        // Convert external shipping statuses
+        // to our application's statuses.
+        $status = match ($response['status'] ?? null) {
+            'pending' => 'processing',
+            'in_transit' => 'shipped',
+            'delivered' => 'delivered',
+            default => $shipment->status,
+        };
+
+        // Update our local shipment record
         $shipment->update([
-            'status' => $response['status'] ?? $shipment->status,
+            'status' => $status,
+
             'tracking_number' => $response['tracking_number']
                 ?? $shipment->tracking_number,
+
             'carrier' => $response['carrier']
                 ?? $shipment->carrier,
         ]);

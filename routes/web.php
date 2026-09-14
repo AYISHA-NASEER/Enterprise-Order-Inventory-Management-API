@@ -67,6 +67,27 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/inventory', [AdminWebController::class, 'inventory'])
         ->name('admin.inventory.index');
 
+    Route::get('/admin/categories', [AdminWebController::class, 'categories'])
+        ->name('admin.categories');
+
+    Route::get('/admin/categories/create', [AdminWebController::class, 'categoryCreate'])
+        ->name('admin.categories.create');
+
+    Route::post('/admin/categories', [AdminWebController::class, 'categoryStore'])
+        ->name('admin.categories.store');
+
+    Route::get('/admin/categories/{category}/edit', [AdminWebController::class, 'categoryEdit'])
+        ->name('admin.categories.edit');
+
+    Route::put('/admin/categories/{category}', [AdminWebController::class, 'categoryUpdate'])
+        ->name('admin.categories.update');
+
+    Route::delete('/admin/categories/{category}', [AdminWebController::class, 'categoryDestroy'])
+        ->name('admin.categories.destroy');
+
+    Route::get('/admin/orders/{order}', [AdminWebController::class, 'orderShow'])
+        ->name('admin.orders.show');
+
 });
 
 
@@ -96,10 +117,9 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
 
     Route::get('/customer/products', [CustomerWebController::class, 'products'])
         ->name('customer.products');
-    Route::post(
-        '/customer/cart/{productId}',
-        [CustomerWebController::class, 'addToCart']
-    )->name('customer.cart.add');
+
+    Route::post('/customer/cart/{productId}', [CustomerWebController::class, 'addToCart'])
+        ->name('customer.cart.add');
 
     Route::get('/customer/cart', [CustomerWebController::class, 'cart'])
         ->name('customer.cart');
@@ -167,12 +187,12 @@ Route::middleware(['auth', 'role:warehouse'])->group(function () {
     )->name('warehouse.shipments');
 });
 
-Route::middleware('auth')->group(function () {
+// Route::middleware('auth')->group(function () {
 
-    Route::get('/admin/orders', [AdminWebController::class, 'index'])
-        ->name('admin.orders.index');
+//     Route::get('/admin/orders', [AdminWebController::class, 'index'])
+//         ->name('admin.orders.index');
 
-});
+// });
 
 
 

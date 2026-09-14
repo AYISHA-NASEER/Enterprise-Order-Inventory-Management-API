@@ -21,24 +21,83 @@
 
     {{-- Success Message --}}
     @if(session('success'))
-
         <div class="alert alert-success">
             {{ session('success') }}
         </div>
-
     @endif
 
 
     {{-- Error Message --}}
     @if(session('error'))
-
         <div class="alert alert-danger">
             {{ session('error') }}
         </div>
-
     @endif
 
 
+    {{-- Search & Filter --}}
+    <form method="GET" action="{{ route('customer.products') }}" class="card card-body shadow-sm mb-4">
+
+        <div class="row g-3">
+
+            {{-- Search --}}
+            <div class="col-md-5">
+
+                <label class="form-label">
+                    Search Product
+                </label>
+
+                <input type="text" name="search" value="{{ request('search') }}" class="form-control"
+                    placeholder="Search by name or SKU...">
+
+            </div>
+
+
+            {{-- Category --}}
+            <div class="col-md-4">
+
+                <label class="form-label">
+                    Category
+                </label>
+
+                <select name="category" class="form-select">
+
+                    <option value="">
+                        All Categories
+                    </option>
+
+                    @foreach($categories as $category)
+
+                        <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+            </div>
+
+
+            {{-- Buttons --}}
+            <div class="col-md-3 d-flex align-items-end">
+
+                <button type="submit" class="btn btn-primary me-2">
+                    🔍 Search
+                </button>
+
+                <a href="{{ route('customer.products') }}" class="btn btn-secondary">
+                    Reset
+                </a>
+
+            </div>
+
+        </div>
+
+    </form>
+
+
+    {{-- Products --}}
     @if($products->count() > 0)
 
         <div class="row g-4">
@@ -104,7 +163,8 @@
                                         </span>
 
                                         <small class="text-muted ms-2">
-                                            {{ $product->inventory->quantity }} available
+                                            {{ $product->inventory->quantity }}
+                                            available
                                         </small>
 
                                     </div>
@@ -146,7 +206,6 @@
                                     </div>
 
 
-                                    {{-- Disabled Button --}}
                                     <button type="button" class="btn btn-secondary w-100 mt-auto" disabled>
                                         ❌ Out of Stock
                                     </button>
@@ -156,7 +215,7 @@
 
                             @else
 
-                                {{-- Inventory Record Missing --}}
+                                {{-- Inventory Missing --}}
                                 <div class="mb-3">
 
                                     <span class="badge bg-danger">
@@ -181,6 +240,62 @@
             @endforeach
 
         </div>
+
+
+        {{-- ================================================= --}}
+        {{-- PAGINATION --}}
+        {{-- ================================================= --}}
+
+        {{-- Pagination --}}
+        @if($products instanceof \Illuminate\Pagination\LengthAwarePaginator)
+
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-5">
+
+                {{-- Previous --}}
+                @if($products->onFirstPage())
+
+                    <button class="btn btn-outline-secondary" disabled>
+                        ← Previous
+                    </button>
+
+                @else
+
+                    <a href="{{ $products->previousPageUrl() }}" class="btn btn-outline-primary">
+                        ← Previous
+                    </a>
+
+                @endif
+
+
+                {{-- Page Information --}}
+                <span class="text-muted">
+
+                    Page
+                    <strong>{{ $products->currentPage() }}</strong>
+                    of
+                    <strong>{{ $products->lastPage() }}</strong>
+
+                </span>
+
+
+                {{-- Next --}}
+                @if($products->hasMorePages())
+
+                    <a href="{{ $products->nextPageUrl() }}" class="btn btn-primary">
+                        Next →
+                    </a>
+
+                @else
+
+                    <button class="btn btn-outline-secondary" disabled>
+                        Next →
+                    </button>
+
+                @endif
+
+            </div>
+
+        @endif
 
 
     @else

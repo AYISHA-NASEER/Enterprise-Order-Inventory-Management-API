@@ -8,7 +8,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-
 class ProductService
 {
     /**
@@ -32,7 +31,7 @@ class ProductService
     }
 
     /**
-     * Find one product.
+     * Find a product.
      */
     public function find(int $id): Product
     {
@@ -51,7 +50,6 @@ class ProductService
 
         $product->update($data);
 
-        // Product list cache is now outdated.
         $this->clearProductListCache();
 
         return $product->fresh([
@@ -69,21 +67,124 @@ class ProductService
 
         $product->delete();
 
-        // Product list cache is now outdated.
         $this->clearProductListCache();
     }
 
     /**
-     * List products with:
-     * - search
-     * - category filter
-     * - status filter
-     * - sorting
-     * - pagination
-     * - Redis caching
+     * Get products with search, category, status,
+     * sorting and pagination.
      */
     public function list(array $filters = []): LengthAwarePaginator
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Build the product query
+        |--------------------------------------------------------------------------
+        */
+
+        $query = Product::with([
+            'category',
+            'inventory',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
+        if (!empty($filters['search'])) {
+
+            $search = trim($filters['search']);
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where(
+                    'name',
+                    'like',
+                    "%{$search}%"
+                )->orWhere(
+                        'sku',
+                        'like',
+                        "%{$search}%"
+                    );
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Category filter
+        |--------------------------------------------------------------------------
+        */
+
+        if (!empty($filters['category'])) {
+
+            $query->where(
+                'category_id',
+                $filters['category']
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status filter
+        |--------------------------------------------------------------------------
+        */
+
+        if (!empty($filters['status'])) {
+
+            $query->where(
+                'status',
+                $filters['status']
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Sorting
+        |--------------------------------------------------------------------------
+        */
+
+        $sortBy = $filters['sort_by'] ?? 'created_at';
+
+        $sortDir = $filters['sort_dir'] ?? 'desc';
+
+        $allowedSorts = [
+            'id',
+            'name',
+            'sku',
+            'price',
+            'created_at',
+            'updated_at',
+        ];
+
+        if (!in_array($sortBy, $allowedSorts, true)) {
+            $sortBy = 'created_at';
+        }
+
+        $sortDir = $sortDir === 'asc'
+            ? 'asc'
+            : 'desc';
+
+        $query->orderBy(
+            $sortBy,
+            $sortDir
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Items per page
+        |--------------------------------------------------------------------------
+        */
+
+        $perPage = min(
+            max(
+                (int) ($filters['per_page'] ?? 15),
+                1
+            ),
+            50
+        );
+
         /*
         |--------------------------------------------------------------------------
         | Page
@@ -97,181 +198,34 @@ class ProductService
 
         /*
         |--------------------------------------------------------------------------
-        | Cache Key
+        | Database pagination
         |--------------------------------------------------------------------------
         |
-        | Every different combination gets a different cache entry.
+        | IMPORTANT:
         |
-        | Example:
+        | We do NOT cache the paginator.
+        | We do NOT cache an Eloquent Collection.
         |
-        | products:abc123
-        | products:def456
+        | MySQL returns only the products needed for this page.
         |
         */
 
-        $cacheKey = 'products:' . md5(
-            json_encode($filters)
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Redis Cache
-        |--------------------------------------------------------------------------
-        |
-        | If data already exists in Redis:
-        |
-        |     Redis → return data
-        |
-        | Otherwise:
-        |
-        |     MySQL → Redis → return data
-        |
-        */
-
-        return Cache::remember(
-            $cacheKey,
-            now()->addMinutes(10),
-            function () use ($filters, $page) {
-
-                /*
-                |--------------------------------------------------------------------------
-                | Base Query
-                |--------------------------------------------------------------------------
-                */
-
-                $query = Product::with([
-                    'category',
-                    'inventory',
-                ]);
-
-                /*
-                |--------------------------------------------------------------------------
-                | Search
-                |--------------------------------------------------------------------------
-                |
-                | Search product name OR SKU.
-                |
-                */
-
-                if (!empty($filters['search'])) {
-
-                    $search = $filters['search'];
-
-                    $query->where(function ($q) use ($search) {
-
-                        $q->where(
-                            'name',
-                            'like',
-                            "%{$search}%"
-                        )->orWhere(
-                                'sku',
-                                'like',
-                                "%{$search}%"
-                            );
-                    });
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | Category Filter
-                |--------------------------------------------------------------------------
-                */
-
-                if (!empty($filters['category'])) {
-
-                    $query->where(
-                        'category_id',
-                        $filters['category']
-                    );
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | Status Filter
-                |--------------------------------------------------------------------------
-                */
-
-                if (!empty($filters['status'])) {
-
-                    $query->where(
-                        'status',
-                        $filters['status']
-                    );
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | Sorting
-                |--------------------------------------------------------------------------
-                */
-
-                $sortBy = $filters['sort_by'] ?? 'created_at';
-
-                $sortDir = $filters['sort_dir'] ?? 'desc';
-
-                /*
-                | Only allow these columns.
-                | This prevents users from passing arbitrary
-                | column names.
-                */
-
-                $allowedSorts = [
-                    'id',
-                    'name',
-                    'sku',
-                    'price',
-                    'created_at',
-                    'updated_at',
-                ];
-
-                if (!in_array($sortBy, $allowedSorts, true)) {
-                    $sortBy = 'created_at';
-                }
-
-                $sortDir = $sortDir === 'asc'
-                    ? 'asc'
-                    : 'desc';
-
-                $query->orderBy(
-                    $sortBy,
-                    $sortDir
-                );
-
-                /*
-                |--------------------------------------------------------------------------
-                | Pagination
-                |--------------------------------------------------------------------------
-                */
-
-                $perPage = min(
-                    max(
-                        (int) ($filters['per_page'] ?? 15),
-                        1
-                    ),
-                    50
-                );
-
-                return $query->paginate(
-                    $perPage,
-                    ['*'],
-                    'page',
-                    $page
-                );
-            }
+        return $query->paginate(
+            $perPage,
+            ['*'],
+            'page',
+            $page
         );
     }
 
     /**
      * Clear product list cache.
+     *
+     * Kept here because other parts of the application
+     * may use the products:* cache namespace.
      */
     private function clearProductListCache(): void
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Remove all product list cache entries.
-        |--------------------------------------------------------------------------
-        */
-
         $redis = Cache::getRedis();
 
         $keys = $redis->keys('products:*');

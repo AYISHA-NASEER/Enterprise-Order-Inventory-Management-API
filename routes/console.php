@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schedule;
 use App\Jobs\SyncSupplierProductsJob;
 use App\Jobs\ExpireInventoryReservationsJob;
 use App\Jobs\CheckLowStockJob;
+use App\Jobs\CheckShipmentStatusJob;
 
 
 Artisan::command('inspire', function () {
@@ -22,3 +23,6 @@ Schedule::job(new ExpireInventoryReservationsJob)
 Schedule::job(new CheckLowStockJob)->hourly();
 
 Schedule::job(new DailyReportJob)->daily();
+
+Schedule::job(new CheckShipmentStatusJob)
+    ->everyFiveMinutes();

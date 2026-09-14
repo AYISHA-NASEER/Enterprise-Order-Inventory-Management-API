@@ -21,7 +21,7 @@ class ProductWebController extends Controller
     {
         $products = Product::with('category')
             ->latest()
-            ->get();
+            ->paginate();
 
         return view('admin.products.index', compact('products'));
     }
@@ -30,7 +30,7 @@ class ProductWebController extends Controller
     {
         $categories = Category::orderBy('name')->get();
 
-        return view('products.create', compact('categories'));
+        return view('admin.products.create', compact('categories'));
     }
 
     public function store(StoreProductRequest $request): RedirectResponse
@@ -50,7 +50,7 @@ class ProductWebController extends Controller
     {
         $categories = Category::orderBy('name')->get();
 
-        return view('products.edit', compact('product', 'categories'));
+        return view('admin.products.edit', compact('product', 'categories'));
     }
 
     public function update(

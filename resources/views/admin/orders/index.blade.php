@@ -9,6 +9,7 @@
 
             <div>
                 <h2>All Orders</h2>
+
                 <p class="text-muted mb-0">
                     View and manage customer orders
                 </p>
@@ -43,6 +44,7 @@
                             </tr>
 
                         </thead>
+
 
                         <tbody>
 
@@ -92,7 +94,7 @@
 
                                     {{-- Total --}}
                                     <td>
-                                        ₹{{ number_format($order->total_amount, 2) }}
+                                        ₹{{ number_format((float) $order->total_amount, 2) }}
                                     </td>
 
 
@@ -143,13 +145,15 @@
                                     {{-- Action --}}
                                     <td>
 
-                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ route('admin.orders.show', $order) }}"
+                                            class="btn btn-sm btn-outline-primary">
                                             View
                                         </a>
 
                                     </td>
 
                                 </tr>
+
 
                             @empty
 
@@ -181,95 +185,65 @@
         {{-- Pagination --}}
         @if($orders->hasPages())
 
-            <div class="mt-4">
+            <div class="mt-4 mb-4">
 
-                {{-- Previous / Page Numbers / Next --}}
                 <nav aria-label="Orders pagination">
 
-                    <ul class="pagination justify-content-center mb-2">
+                    <div class="d-flex justify-content-center align-items-center gap-3">
+
 
                         {{-- Previous --}}
                         @if($orders->onFirstPage())
 
-                            <li class="page-item disabled">
-
-                                <span class="page-link">
-                                    « Previous
-                                </span>
-
-                            </li>
+                            <button class="btn btn-outline-secondary" disabled>
+                                ← Previous
+                            </button>
 
                         @else
 
-                            <li class="page-item">
-
-                                <a class="page-link" href="{{ $orders->previousPageUrl() }}">
-                                    « Previous
-                                </a>
-
-                            </li>
+                            <a href="{{ $orders->previousPageUrl() }}" class="btn btn-outline-primary">
+                                ← Previous
+                            </a>
 
                         @endif
 
 
-                        {{-- Page Numbers --}}
-                        @foreach($orders->getUrlRange(1, $orders->lastPage()) as $page => $url)
+                        {{-- Page Information --}}
+                        <span class="text-muted">
 
-                            @if($page == $orders->currentPage())
+                            Page
 
-                                <li class="page-item active">
+                            <strong>
+                                {{ $orders->currentPage() }}
+                            </strong>
 
-                                    <span class="page-link">
-                                        {{ $page }}
-                                    </span>
+                            of
 
-                                </li>
+                            <strong>
+                                {{ $orders->lastPage() }}
+                            </strong>
 
-                            @else
-
-                                <li class="page-item">
-
-                                    <a class="page-link" href="{{ $url }}">
-                                        {{ $page }}
-                                    </a>
-
-                                </li>
-
-                            @endif
-
-                        @endforeach
+                        </span>
 
 
                         {{-- Next --}}
                         @if($orders->hasMorePages())
 
-                            <li class="page-item">
-
-                                <a class="page-link" href="{{ $orders->nextPageUrl() }}">
-                                    Next »
-                                </a>
-
-                            </li>
+                            <a href="{{ $orders->nextPageUrl() }}" class="btn btn-primary">
+                                Next →
+                            </a>
 
                         @else
 
-                            <li class="page-item disabled">
-
-                                <span class="page-link">
-                                    Next »
-                                </span>
-
-                            </li>
+                            <button class="btn btn-outline-secondary" disabled>
+                                Next →
+                            </button>
 
                         @endif
 
-                    </ul>
+                    </div>
 
                 </nav>
-
-
-
-
 
             </div>
 

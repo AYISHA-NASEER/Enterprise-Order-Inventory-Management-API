@@ -236,24 +236,63 @@
         </div>
 
 
+
         {{-- Pagination --}}
-        <div class="d-flex justify-content-between align-items-center mt-4">
+        @if($products->hasPages())
 
-            <div class="text-muted">
-                Showing
-                {{ $payments->firstItem() ?? 0 }}
-                -
-                {{ $payments->lastItem() ?? 0 }}
-                of
-                {{ $payments->total() }}
-                payments
+            <div class="mt-4 mb-4">
+
+                <nav aria-label="Products pagination">
+
+                    <div class="d-flex justify-content-center align-items-center gap-3">
+
+                        {{-- Previous --}}
+                        @if($products->onFirstPage())
+
+                            <button class="btn btn-outline-secondary" disabled>
+                                ← Previous
+                            </button>
+
+                        @else
+
+                            <a href="{{ $products->previousPageUrl() }}" class="btn btn-outline-primary">
+                                ← Previous
+                            </a>
+
+                        @endif
+
+
+                        {{-- Page Information --}}
+                        <span class="text-muted">
+                            Page
+                            <strong>{{ $products->currentPage() }}</strong>
+                            of
+                            <strong>{{ $products->lastPage() }}</strong>
+                        </span>
+
+
+                        {{-- Next --}}
+                        @if($products->hasMorePages())
+
+                            <a href="{{ $products->nextPageUrl() }}" class="btn btn-primary">
+                                Next →
+                            </a>
+
+                        @else
+
+                            <button class="btn btn-outline-secondary" disabled>
+                                Next →
+                            </button>
+
+                        @endif
+
+                    </div>
+
+                </nav>
+
             </div>
 
-            <div>
-                {{ $payments->links() }}
-            </div>
-
-        </div>
+        @endif
 
     </div>
 

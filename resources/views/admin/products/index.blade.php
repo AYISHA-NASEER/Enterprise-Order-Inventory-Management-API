@@ -4,10 +4,12 @@
 
     <div class="container mt-4">
 
+        {{-- Header --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
 
             <div>
                 <h2>Products</h2>
+
                 <p class="text-muted mb-0">
                     Manage your products
                 </p>
@@ -20,20 +22,9 @@
         </div>
 
 
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
 
 
-        @if(session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-        @endif
-
-
+        {{-- Products --}}
         @if($products->count() > 0)
 
             <div class="card shadow-sm">
@@ -58,32 +49,44 @@
 
                             </thead>
 
+
                             <tbody>
 
                                 @foreach($products as $product)
 
                                     <tr>
 
+                                        {{-- ID --}}
                                         <td>
                                             {{ $product->id }}
                                         </td>
 
+
+                                        {{-- Name --}}
                                         <td>
                                             {{ $product->name }}
                                         </td>
 
+
+                                        {{-- SKU --}}
                                         <td>
                                             {{ $product->sku }}
                                         </td>
 
+
+                                        {{-- Category --}}
                                         <td>
                                             {{ $product->category?->name ?? 'No Category' }}
                                         </td>
 
+
+                                        {{-- Price --}}
                                         <td>
-                                            ₹{{ number_format($product->price, 2) }}
+                                            ₹{{ number_format((float) $product->price, 2) }}
                                         </td>
 
+
+                                        {{-- Status --}}
                                         <td>
 
                                             @if($product->status === 'active')
@@ -102,6 +105,8 @@
 
                                         </td>
 
+
+                                        {{-- Action --}}
                                         <td>
 
                                             <a href="{{ route('products.edit', $product->id) }}"
@@ -125,8 +130,69 @@
 
             </div>
 
+
+
+            {{-- Pagination --}}
+            {{-- Pagination --}}
+            @if($products->hasPages())
+
+                <div class="mt-4 mb-4">
+
+                    <nav aria-label="Products pagination">
+
+                        <div class="d-flex justify-content-center align-items-center gap-3">
+
+                            {{-- Previous --}}
+                            @if($products->onFirstPage())
+
+                                <button class="btn btn-outline-secondary" disabled>
+                                    ← Previous
+                                </button>
+
+                            @else
+
+                                <a href="{{ $products->previousPageUrl() }}" class="btn btn-outline-primary">
+                                    ← Previous
+                                </a>
+
+                            @endif
+
+
+                            {{-- Page Information --}}
+                            <span class="text-muted">
+                                Page
+                                <strong>{{ $products->currentPage() }}</strong>
+                                of
+                                <strong>{{ $products->lastPage() }}</strong>
+                            </span>
+
+
+                            {{-- Next --}}
+                            @if($products->hasMorePages())
+
+                                <a href="{{ $products->nextPageUrl() }}" class="btn btn-primary">
+                                    Next →
+                                </a>
+
+                            @else
+
+                                <button class="btn btn-outline-secondary" disabled>
+                                    Next →
+                                </button>
+
+                            @endif
+
+                        </div>
+
+                    </nav>
+
+                </div>
+
+            @endif
+
         @else
 
+            {{-- No Products --}}
             <div class="alert alert-info">
                 No products found.
             </div>
