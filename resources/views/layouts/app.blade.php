@@ -22,7 +22,7 @@
 
             {{-- Logo --}}
             <a class="navbar-brand" href="#">
-                Enterprise Commerce
+                Enterprise E-commerce
             </a>
 
 
