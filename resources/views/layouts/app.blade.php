@@ -108,34 +108,41 @@
 
                     @elseif(auth()->user()->isManager())
 
-                        <a href="/manager/dashboard" class="btn btn-outline-light btn-sm">
+                        <a href="{{ route('manager.dashboard') }}" class="btn btn-outline-light btn-sm">
                             🏠 Dashboard
-                        </a>
+                            <a>
+                                <a href="{{ route('manager.orders') }}" class="btn btn-outline-light btn-sm">
+                                    📦 Orders
+                                </a>
 
-                        <a href="/orders" class="btn btn-outline-light btn-sm">
-                            📦 Orders
-                        </a>
+                                <a href="{{ route('manager.inventory') }}" class="btn btn-outline-light btn-sm">
+                                    📊 Inventory
+                                </a>
 
-                        <a href="/inventory" class="btn btn-outline-light btn-sm">
-                            📊 Inventory
-                        </a>
+                                <a href="{{ route('manager.reports') }}" class="btn btn-outline-light btn-sm">
+                                    📊 Reports
+                                </a>
+
+                                <a href="{{ route('manager.supplier-sync') }}" class="btn btn-outline-light btn-sm">
+                                    🔄 Supplier Sync
+                                </a>
 
                     @endif
 
 
-                    {{-- ================================= --}}
-                    {{-- LOGOUT --}}
-                    {{-- ================================= --}}
+                            {{-- ================================= --}}
+                            {{-- LOGOUT --}}
+                            {{-- ================================= --}}
 
-                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                            <form action="{{ route('logout') }}" method="POST" class="d-inline">
 
-                        @csrf
+                                @csrf
 
-                        <button type="submit" class="btn btn-danger btn-sm">
-                            🚪 Logout
-                        </button>
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    🚪 Logout
+                                </button>
 
-                    </form>
+                            </form>
 
                 @endauth
 

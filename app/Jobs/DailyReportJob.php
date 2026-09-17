@@ -7,6 +7,8 @@ use App\Models\Payment;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
+use App\Mail\DailySalesReportMail;
+use Illuminate\Support\Facades\Mail;
 
 class DailyReportJob implements ShouldQueue
 {
@@ -31,6 +33,16 @@ class DailyReportJob implements ShouldQueue
         $revenue = Payment::where('created_at', '>=', $today)
             ->where('status', 'paid')
             ->sum('amount');
+
+            
+        Mail::to('admin@test.com')->send(
+            new DailySalesReportMail(
+                $today->toDateString(),
+                $orders,
+                $paidOrders,
+                (float) $revenue
+            )
+        );
 
         Log::info('Daily order report', [
             'date' => $today->toDateString(),

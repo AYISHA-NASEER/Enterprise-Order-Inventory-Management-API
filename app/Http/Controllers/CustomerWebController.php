@@ -282,4 +282,13 @@ class CustomerWebController extends Controller
             compact('notifications')
         );
     }
+    public function tracking(Order $order)
+    {
+        $shipment = $order->shipment;
+
+        return view('customer.orders.tracking', compact(
+            'order',
+            'shipment'
+        ));
+    }
 }

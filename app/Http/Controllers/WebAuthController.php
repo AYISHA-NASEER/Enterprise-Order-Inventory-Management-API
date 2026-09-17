@@ -88,10 +88,7 @@ class WebAuthController extends Controller
             UserRole::Admin => redirect()
                 ->route('dashboard'),
 
-            UserRole::Manager => abort(
-                403,
-                'Manager dashboard is not available yet.'
-            ),
+            UserRole::Manager => redirect()->route('manager.dashboard'),
 
             UserRole::Warehouse => redirect()->route('warehouse.dashboard'),
 

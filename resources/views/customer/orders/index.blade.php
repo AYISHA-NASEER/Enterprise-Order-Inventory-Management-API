@@ -393,7 +393,21 @@
                                         </div>
 
                                     @endif
+  <div class="mt-3">
 
+                                        <a
+                                            href="{{ route(
+                                                'customer.orders.tracking',
+                                                $order->id
+                                            ) }}"
+                                            class="btn btn-primary"
+                                        >
+
+                                            🚚 Track Shipment
+
+                                        </a>
+
+                                    </div>
 
                                     {{-- Shipment Timeline --}}
 

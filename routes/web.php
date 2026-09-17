@@ -9,6 +9,7 @@ use App\Http\Controllers\WebAuthController;
 use App\Http\Controllers\CustomerWebController;
 use App\Http\Controllers\WarehouseWebController;
 use App\Http\Controllers\AdminWebController;
+use App\Http\Controllers\ManagerWebController;
 
 Route::get('/payment-test/{paymentId}', function (int $paymentId) {
 
@@ -148,6 +149,9 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
         '/customer/notifications',
         [CustomerWebController::class, 'notifications']
     )->name('customer.notifications');
+
+    Route::get('/customer/orders/{order}/tracking', [CustomerWebController::class, 'tracking'])
+        ->name('customer.orders.tracking');
 });
 
 
@@ -189,6 +193,27 @@ Route::middleware(['auth', 'role:warehouse'])->group(function () {
 
 
 
+
+Route::middleware(['auth', 'role:manager'])->prefix('manager')
+    ->group(function () {
+
+        Route::get('/dashboard', function () {
+            return view('manager.dashboard');
+        })->name('manager.dashboard');
+
+        Route::get('/orders', [ManagerWebController::class, 'orders'])
+            ->name('manager.orders');
+
+        Route::get('/inventory', [ManagerWebController::class, 'inventory'])
+            ->name('manager.inventory');
+
+        Route::get('/reports', [ManagerWebController::class, 'reports'])
+            ->name('manager.reports');
+
+        Route::get('/supplier-sync', [ManagerWebController::class, 'supplierSync'])
+            ->name('manager.supplier-sync');
+
+    });
 
 
 
