@@ -11,6 +11,10 @@ class Inventory extends Model
     protected $fillable = [
         'product_id',
         'quantity',
+        'low_stock_alert_sent_at',
+    ];
+    protected $casts = [
+        'low_stock_alert_sent_at' => 'datetime',
     ];
 
     public function product(): BelongsTo

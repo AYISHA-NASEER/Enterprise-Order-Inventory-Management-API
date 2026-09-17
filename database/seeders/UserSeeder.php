@@ -27,11 +27,7 @@ class UserSeeder extends Seeder
                 'email' => 'warehouse@test.com',
                 'role' => UserRole::Warehouse,
             ],
-            [
-                'name' => 'Customer User',
-                'email' => 'customer@test.com',
-                'role' => UserRole::Customer,
-            ],
+
         ];
 
         foreach ($users as $data) {

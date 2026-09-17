@@ -238,52 +238,40 @@
 
 
         {{-- Pagination --}}
-        @if($products->hasPages())
+        @if($payments->hasPages())
 
             <div class="mt-4 mb-4">
 
-                <nav aria-label="Products pagination">
+                <nav aria-label="Payments pagination">
 
                     <div class="d-flex justify-content-center align-items-center gap-3">
 
                         {{-- Previous --}}
-                        @if($products->onFirstPage())
-
+                        @if($payments->onFirstPage())
                             <button class="btn btn-outline-secondary" disabled>
-                                ← Previous
+                                Previous
                             </button>
-
                         @else
-
-                            <a href="{{ $products->previousPageUrl() }}" class="btn btn-outline-primary">
-                                ← Previous
+                            <a href="{{ $payments->previousPageUrl() }}" class="btn btn-outline-primary">
+                                Previous
                             </a>
-
                         @endif
 
-
-                        {{-- Page Information --}}
-                        <span class="text-muted">
-                            Page
-                            <strong>{{ $products->currentPage() }}</strong>
-                            of
-                            <strong>{{ $products->lastPage() }}</strong>
+                        {{-- Page --}}
+                        <span>
+                            Page {{ $payments->currentPage() }}
+                            of {{ $payments->lastPage() }}
                         </span>
 
-
                         {{-- Next --}}
-                        @if($products->hasMorePages())
-
-                            <a href="{{ $products->nextPageUrl() }}" class="btn btn-primary">
-                                Next →
+                        @if($payments->hasMorePages())
+                            <a href="{{ $payments->nextPageUrl() }}" class="btn btn-outline-primary">
+                                Next
                             </a>
-
                         @else
-
                             <button class="btn btn-outline-secondary" disabled>
-                                Next →
+                                Next
                             </button>
-
                         @endif
 
                     </div>

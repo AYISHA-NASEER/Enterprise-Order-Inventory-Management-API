@@ -2,14 +2,7 @@
 
 @section('content')
 
-    <!-- <div class="d-flex justify-content-between align-items-center mb-4">
-                                                            <div>
-                                                                <h1>Dashboard</h1>
-                                                                <p class="text-muted">
-                                                                    Enterprise Order & Inventory Management
-                                                                </p>
-                                                            </div>
-                                                        </div> -->
+
     <div class="mb-4">
         <h2>Welcome, {{ auth()->user()->name }} 👋</h2>
         <p class="text-muted">

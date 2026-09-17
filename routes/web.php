@@ -187,12 +187,7 @@ Route::middleware(['auth', 'role:warehouse'])->group(function () {
     )->name('warehouse.shipments');
 });
 
-// Route::middleware('auth')->group(function () {
 
-//     Route::get('/admin/orders', [AdminWebController::class, 'index'])
-//         ->name('admin.orders.index');
-
-// });
 
 
 

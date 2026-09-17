@@ -22,6 +22,7 @@ Schedule::job(new ExpireInventoryReservationsJob)
 
 Schedule::job(new CheckLowStockJob)->hourly();
 
+
 Schedule::job(new DailyReportJob)->daily();
 
 Schedule::job(new CheckShipmentStatusJob)
