@@ -15,7 +15,8 @@ class OrderPolicy
     public function viewAny(User $user): bool
     {
         return $user->isAdmin()
-            || $user->isManager();
+            || $user->isManager()
+            || $user->isWarehouse();
     }
 
     /**

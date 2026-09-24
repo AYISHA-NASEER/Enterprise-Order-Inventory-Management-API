@@ -21,7 +21,7 @@ class ManagerWebController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('manager.orders', compact('orders'));
+        return view('manager.orders', compact('orders')); 
     }
     public function inventory()
     {

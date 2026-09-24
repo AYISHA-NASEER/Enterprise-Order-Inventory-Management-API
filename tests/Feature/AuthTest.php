@@ -44,6 +44,25 @@ class AuthTest extends TestCase
             'token',
         ]);
     }
+    public function test_inactive_user_cannot_login(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'inactive@example.com',
+            'password' => bcrypt('password123'),
+            'is_active' => false,
+        ]);
+
+        $response = $this->postJson('/api/v1/login', [
+            'email' => 'inactive@example.com',
+            'password' => 'password123',
+        ]);
+
+        $response->assertStatus(422);
+
+        $response->assertJsonValidationErrors([
+            'email',
+        ]);
+    }
 
     public function test_authenticated_user_can_access_me(): void
     {
@@ -66,5 +85,45 @@ class AuthTest extends TestCase
         $response = $this->getJson('/api/v1/me');
 
         $response->assertStatus(401);
+    }
+    public function test_inactive_user_cannot_use_existing_token(): void
+    {
+        $user = User::factory()->create([
+            'is_active' => true,
+        ]);
+
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        // Confirm the token works while the user is active
+        $response = $this->withHeader(
+            'Authorization',
+            'Bearer ' . $token
+        )->getJson('/api/v1/me');
+
+        $response->assertStatus(200);
+
+        // Deactivate the user in the database
+        User::whereKey($user->id)->update([
+            'is_active' => false,
+        ]);
+        $this->app['auth']->forgetGuards();
+
+        // Confirm the database really contains false
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'is_active' => false,
+        ]);
+
+        // Make a completely new HTTP request using the same old token
+        $response = $this->withHeader(
+            'Authorization',
+            'Bearer ' . $token
+        )->getJson('/api/v1/me');
+
+        $response->assertStatus(403);
+
+        $response->assertJson([
+            'message' => 'Your account is inactive.',
+        ]);
     }
 }

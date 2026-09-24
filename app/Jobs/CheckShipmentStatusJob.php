@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\ShipmentStatus;
 use App\Models\Shipment;
 use App\Services\ShippingService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,9 +16,8 @@ class CheckShipmentStatusJob implements ShouldQueue
         ShippingService $shippingService
     ): void {
         $shipments = Shipment::whereIn('status', [
-            'pending',
-            'processing',
-            'shipped',
+            ShipmentStatus::PENDING,
+            ShipmentStatus::IN_TRANSIT,
         ])->get();
 
         foreach ($shipments as $shipment) {

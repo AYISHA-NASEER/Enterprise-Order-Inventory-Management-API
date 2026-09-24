@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -27,14 +29,13 @@ class DailyReportJob implements ShouldQueue
             ->count();
 
         $paidOrders = Order::where('created_at', '>=', $today)
-            ->where('status', 'paid')
+            ->where('status', OrderStatus::PAID)
             ->count();
 
         $revenue = Payment::where('created_at', '>=', $today)
-            ->where('status', 'paid')
+            ->where('status', PaymentStatus::PAID)
             ->sum('amount');
 
-            
         Mail::to('admin@test.com')->send(
             new DailySalesReportMail(
                 $today->toDateString(),

@@ -15,6 +15,11 @@ class ShippingController extends Controller
 
     public function status(int $shipmentId): JsonResponse
     {
+        $shipment = \App\Models\Shipment::with('order')
+            ->findOrFail($shipmentId);
+
+        $this->authorize('view', $shipment->order);
+
         $shipment = $this->shippingService->getStatus($shipmentId);
 
         return response()->json([

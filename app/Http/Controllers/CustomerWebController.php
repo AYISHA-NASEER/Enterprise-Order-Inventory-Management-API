@@ -65,6 +65,7 @@ class CustomerWebController extends Controller
 
     public function storeCategory(Request $request): RedirectResponse
     {
+        $this->authorize('create', Category::class);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:categories,slug'],

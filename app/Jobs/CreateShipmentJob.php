@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\ShipmentStatus;
 use App\Integrations\Shipping\ShippingClient;
 use App\Models\Order;
 use App\Models\Shipment;
@@ -30,7 +31,7 @@ class CreateShipmentJob implements ShouldQueue
                 'order_id' => $this->orderId,
             ],
             [
-                'status' => 'pending',
+                'status' => ShipmentStatus::PENDING,
             ]
         );
 
@@ -44,10 +45,18 @@ class CreateShipmentJob implements ShouldQueue
             'order_id' => $order->id,
         ]);
 
+        // Convert external shipping status to our local enum.
+        $status = match ($response['status'] ?? null) {
+            'pending' => ShipmentStatus::PENDING,
+            'in_transit' => ShipmentStatus::IN_TRANSIT,
+            'shipped' => ShipmentStatus::SHIPPED,
+            default => ShipmentStatus::PENDING,
+        };
+
         // Save shipping details
         $shipment->update([
             'provider_shipment_id' => $response['shipment_id'] ?? null,
-            'status' => $response['status'] ?? 'pending',
+            'status' => $status,
             'tracking_number' => $response['tracking_number'] ?? null,
             'carrier' => $response['carrier'] ?? null,
         ]);
@@ -60,5 +69,4 @@ class CreateShipmentJob implements ShouldQueue
                 )
             );
         }
-    }
-}
+    }}

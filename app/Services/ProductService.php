@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Product;
 use App\Models\Inventory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ProductService
@@ -24,7 +23,7 @@ class ProductService
                 'quantity' => 0,
             ]);
 
-            $this->clearProductListCache();
+
 
             return $product;
         });
@@ -50,8 +49,6 @@ class ProductService
 
         $product->update($data);
 
-        $this->clearProductListCache();
-
         return $product->fresh([
             'category',
             'inventory',
@@ -67,7 +64,6 @@ class ProductService
 
         $product->delete();
 
-        $this->clearProductListCache();
     }
 
     /**
@@ -218,20 +214,5 @@ class ProductService
         );
     }
 
-    /**
-     * Clear product list cache.
-     *
-     * Kept here because other parts of the application
-     * may use the products:* cache namespace.
-     */
-    private function clearProductListCache(): void
-    {
-        $redis = Cache::getRedis();
 
-        $keys = $redis->keys('products:*');
-
-        if (!empty($keys)) {
-            $redis->del($keys);
-        }
-    }
 }

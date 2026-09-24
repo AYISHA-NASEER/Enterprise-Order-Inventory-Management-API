@@ -12,7 +12,7 @@ class StoreOrderRequest extends FormRequest
      */
     public function authorize(): bool
     {
-         return $this->user() !== null;
+        return $this->user() !== null;
     }
 
     /**
@@ -23,29 +23,29 @@ class StoreOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'order_number' => [
-                'required',
-                'string',
-                'max:255',
-                'unique:orders,order_number',
-            ],
             'user_id' => [
                 'required',
                 'integer',
                 'exists:users,id',
             ],
-            'total_amount' => [
+
+            'items' => [
                 'required',
-                'numeric',
-                'min:0',
+                'array',
+                'min:1',
             ],
-            'status' => [
+
+            'items.*.product_id' => [
                 'required',
-                'string',
-                'in:pending,confirmed,cancelled',
+                'integer',
+                'exists:products,id',
+            ],
 
-            ]
-
+            'items.*.quantity' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
         ];
     }
 }

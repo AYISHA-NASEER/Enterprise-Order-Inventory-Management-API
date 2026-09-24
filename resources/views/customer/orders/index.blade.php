@@ -184,9 +184,9 @@
                         @foreach($order->items as $item)
 
                             <div class="d-flex justify-content-between
-                                                    align-items-center
-                                                    border-bottom
-                                                    py-2">
+                                                                                    align-items-center
+                                                                                    border-bottom
+                                                                                    py-2">
 
                                 <div>
 
@@ -235,10 +235,10 @@
                         @if($order->payment)
 
                             <div class="alert
-                                            {{ $order->payment->status === 'paid'
+                                                                            {{ $order->payment->status === 'paid'
                                 ? 'alert-success'
                                 : 'alert-light' }}
-                                            mt-4 mb-0">
+                                                                            mt-4 mb-0">
 
                                 <div class="fw-bold mb-2">
                                     💳 Payment
@@ -393,15 +393,12 @@
                                         </div>
 
                                     @endif
-  <div class="mt-3">
+                                    <div class="mt-3">
 
-                                        <a
-                                            href="{{ route(
-                                                'customer.orders.tracking',
-                                                $order->id
-                                            ) }}"
-                                            class="btn btn-primary"
-                                        >
+                                        <a href="{{ route(
+                                'customer.orders.tracking',
+                                $order->id
+                            ) }}" class="btn btn-primary">
 
                                             🚚 Track Shipment
 

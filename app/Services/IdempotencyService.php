@@ -6,18 +6,24 @@ use App\Models\IdempotencyKey;
 
 class IdempotencyService
 {
-    public function find(string $key): ?IdempotencyKey
-    {
-        return IdempotencyKey::where('key', $key)->first();
+    public function find(
+        string $key,
+        int $userId
+    ): ?IdempotencyKey {
+        return IdempotencyKey::where('key', $key)
+            ->where('user_id', $userId)
+            ->first();
     }
 
     public function create(
         string $key,
-        ?int $userId = null
+        int $userId,
+        ?string $requestFingerprint = null
     ): IdempotencyKey {
         return IdempotencyKey::create([
             'key' => $key,
             'user_id' => $userId,
+            'request_fingerprint' => $requestFingerprint,
             'status' => 'processing',
         ]);
     }

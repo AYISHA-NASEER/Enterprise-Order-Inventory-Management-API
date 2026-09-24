@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Integrations\Shipping\ShippingClient;
 use App\Models\Shipment;
+use App\Enums\ShipmentStatus;
 use RuntimeException;
 
 class ShippingService
@@ -31,9 +32,8 @@ class ShippingService
         // Convert external shipping statuses
         // to our application's statuses.
         $status = match ($response['status'] ?? null) {
-            'pending' => 'processing',
-            'in_transit' => 'shipped',
-            'delivered' => 'delivered',
+            'pending' => ShipmentStatus::PENDING,
+            'in_transit' => ShipmentStatus::IN_TRANSIT,
             default => $shipment->status,
         };
 

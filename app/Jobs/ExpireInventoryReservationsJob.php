@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Enums\InventoryReservationStatus;
 
 class ExpireInventoryReservationsJob implements ShouldQueue
 {
@@ -16,7 +17,7 @@ class ExpireInventoryReservationsJob implements ShouldQueue
 
     public function handle(InventoryService $inventoryService): void
     {
-        InventoryReservation::where('status', 'active')
+        InventoryReservation::where('status', InventoryReservationStatus::ACTIVE)
             ->where('expires_at', '<=', now())
             ->chunkById(100, function ($reservations) use ($inventoryService) {
 
@@ -24,7 +25,7 @@ class ExpireInventoryReservationsJob implements ShouldQueue
 
                     $inventoryService->releaseReservation(
                         $reservation->id,
-                        'expired'
+                        InventoryReservationStatus::EXPIRED
                     );
                 }
             });

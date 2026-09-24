@@ -21,7 +21,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        // dd(auth()->user());
+
         $this->authorize('viewAny', Order::class);
 
         $orders = $this->orderService->all();
@@ -63,7 +63,10 @@ class OrderController extends Controller
 
         $validated = $request->validated();
 
-        $order = $this->orderService->create($validated);
+        $order = $this->orderService->createManualOrder(
+            $validated['user_id'],
+            $validated['items']
+        );
 
         return response()->json([
             'message' => 'Order created successfully',

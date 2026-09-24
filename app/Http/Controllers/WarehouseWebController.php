@@ -20,6 +20,7 @@ class WarehouseWebController extends Controller
     // View Inventory
     public function inventory(): View
     {
+        $this->authorize('viewAny', Inventory::class);
         $inventory = Inventory::with('product.category')
             ->latest()
             ->get();
@@ -36,6 +37,8 @@ class WarehouseWebController extends Controller
         Request $request,
         Inventory $inventory
     ): RedirectResponse {
+
+        $this->authorize('update', $inventory);
 
         $validated = $request->validate([
             'quantity' => [
@@ -63,6 +66,7 @@ class WarehouseWebController extends Controller
         Inventory $inventory
     ): RedirectResponse {
 
+        $this->authorize('update', $inventory);
         $validated = $request->validate([
             'quantity' => [
                 'required',

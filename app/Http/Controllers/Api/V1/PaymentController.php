@@ -7,6 +7,7 @@ use App\Integrations\Razorpay\WebhookVerifier;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Models\Order;
 
 use App\Services\PaymentWebhookService;
 
@@ -35,8 +36,12 @@ class PaymentController extends Controller
             ],
         ]);
 
+        $order = Order::findOrFail($validated['order_id']);
+
+        $this->authorize('view', $order);
+
         $payment = $this->paymentService->createPayment(
-            $validated['order_id']
+            $order->id
         );
 
         return response()->json([
@@ -51,6 +56,8 @@ class PaymentController extends Controller
     public function show(int $paymentId): JsonResponse
     {
         $payment = $this->paymentService->find($paymentId);
+
+        $this->authorize('view', $payment->order);
 
         return response()->json([
             'data' => $payment,
@@ -80,6 +87,10 @@ class PaymentController extends Controller
                 'string',
             ],
         ]);
+
+        $payment = $this->paymentService->find($paymentId);
+
+        $this->authorize('view', $payment->order);
 
         try {
             $payment = $this->paymentService->verifyPayment(

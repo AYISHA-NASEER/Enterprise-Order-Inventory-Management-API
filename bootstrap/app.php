@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register the role middleware
         $middleware->alias([
+            'active' => \App\Http\Middleware\EnsureUserIsActive::class,
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
         ]);
         $middleware->append(RequestIdMiddleware::class);

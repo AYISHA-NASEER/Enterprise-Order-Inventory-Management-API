@@ -19,6 +19,7 @@ class ProductWebController extends Controller
 
     public function index(): View
     {
+        $this->authorize('viewAny', Product::class);
         $products = Product::with('category')
             ->latest()
             ->paginate();
@@ -28,6 +29,7 @@ class ProductWebController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Product::class);
         $categories = Category::orderBy('name')->get();
 
         return view('admin.products.create', compact('categories'));
@@ -48,6 +50,8 @@ class ProductWebController extends Controller
 
     public function edit(Product $product): View
     {
+        $this->authorize('update', $product);
+
         $categories = Category::orderBy('name')->get();
 
         return view('admin.products.edit', compact('product', 'categories'));

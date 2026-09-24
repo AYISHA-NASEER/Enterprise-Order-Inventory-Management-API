@@ -7,6 +7,7 @@ use App\Models\InventoryReservation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use App\Enums\InventoryReservationStatus;
 
 class InventoryService
 {
@@ -236,7 +237,7 @@ class InventoryService
             /*
              * Only active reservations can be attached.
              */
-            if ($reservation->status !== 'active') {
+            if ($reservation->status !== InventoryReservationStatus::ACTIVE) {
                 throw new RuntimeException(
                     'Only active reservations can be attached to an order.'
                 );
@@ -291,14 +292,13 @@ class InventoryService
              * If the same payment/webhook is processed twice,
              * don't do anything again.
              */
-            if ($reservation->status === 'consumed') {
+            if ($reservation->status === InventoryReservationStatus::CONSUMED) {
                 return $reservation;
             }
-
             /*
              * Only active reservations can be consumed.
              */
-            if ($reservation->status !== 'active') {
+            if ($reservation->status !== InventoryReservationStatus::ACTIVE) {
                 throw new RuntimeException(
                     'Reservation is not active.'
                 );
@@ -318,9 +318,7 @@ class InventoryService
              *
              * DO NOT increase inventory.
              */
-            $reservation->update([
-                'status' => 'consumed',
-            ]);
+            $reservation->consume();
 
             return $reservation->fresh();
         });
@@ -339,19 +337,8 @@ class InventoryService
      */
     public function releaseReservation(
         int $reservationId,
-        string $status = 'released'
+        InventoryReservationStatus $status = InventoryReservationStatus::RELEASED
     ): InventoryReservation {
-        $allowedStatuses = [
-            'released',
-            'expired',
-        ];
-
-        if (!in_array($status, $allowedStatuses, true)) {
-            throw new RuntimeException(
-                'Invalid reservation release status.'
-            );
-        }
-
         return DB::transaction(function () use ($reservationId, $status) {
             /*
              * Lock reservation first.
@@ -375,7 +362,7 @@ class InventoryService
              *
              * don't return stock again.
              */
-            if ($reservation->status !== 'active') {
+            if ($reservation->status !== InventoryReservationStatus::ACTIVE) {
                 return $reservation;
             }
 
@@ -398,11 +385,17 @@ class InventoryService
             );
 
             /*
-             * Update reservation status.
+             * Use the correct state transition method.
              */
-            $reservation->update([
-                'status' => $status,
-            ]);
+            if ($status === InventoryReservationStatus::RELEASED) {
+                $reservation->release();
+            } elseif ($status === InventoryReservationStatus::EXPIRED) {
+                $reservation->expire();
+            } else {
+                throw new RuntimeException(
+                    'Invalid reservation release status.'
+                );
+            }
 
             return $reservation->fresh();
         });

@@ -24,7 +24,7 @@ Route::post('/v1/categories', [CategoryController::class, 'store']);
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/v1/products', [ProductController::class, 'store']);
-     Route::get('/v1/products', [ProductController::class, 'index'])->middleware('throttle:products');
+    Route::get('/v1/products', [ProductController::class, 'index'])->middleware('throttle:products');
     Route::get('/v1/products/{id}', [ProductController::class, 'show']);
     Route::patch('/v1/products/{id}', [ProductController::class, 'update']);
     Route::delete('/v1/products/{id}', [ProductController::class, 'destroy']);
@@ -71,9 +71,14 @@ Route::middleware('auth:sanctum')
 
 
 
-Route::post('/v1/order-items', [OrderItemController::class, 'store']);
-Route::get('/v1/order-items', [OrderItemController::class, 'index']);
-Route::get('/v1/order-items/{id}', [OrderItemController::class, 'show']);
+// Route::post('/v1/order-items', [OrderItemController::class, 'store']);
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::get('/v1/order-items', [OrderItemController::class, 'index']);
+    Route::get('/v1/order-items/{id}', [OrderItemController::class, 'show']);
+});
+
 
 Route::post('/v1/register', [AuthController::class, 'register']);
 
@@ -81,7 +86,7 @@ Route::post('/v1/register', [AuthController::class, 'register']);
 Route::post('/v1/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
 
-Route::middleware('auth:sanctum')->get('/v1/me', [AuthController::class, 'me']);
+Route::middleware(['auth:sanctum','active'])->get('/v1/me', [AuthController::class, 'me']);
 Route::middleware('auth:sanctum')->post('/v1/logout', [AuthController::class, 'logout']);
 
 
@@ -108,18 +113,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 });
-Route::post(
-    '/v1/payments/{paymentId}/verify',
-    [PaymentController::class, 'verify']
-);
 
+Route::post('/v1/payments/{paymentId}/verify', [PaymentController::class, 'verify'])->middleware('auth:sanctum');
 
 
 Route::post('/v1/payments/webhook', [PaymentController::class, 'webhook']);
 
 
-Route::get('/v1/shipments/{shipmentId}', [ShippingController::class, 'status']);
-
-
+Route::get('/v1/shipments/{shipmentId}', [ShippingController::class, 'status'])
+    ->middleware('auth:sanctum');
 
 Route::get('/v1/health', HealthController::class);

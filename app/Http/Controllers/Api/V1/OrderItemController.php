@@ -13,9 +13,11 @@ class OrderItemController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $items = $this->orderItemService->all();
+        $items = $this->orderItemService->allForUser(
+            $request->user()->id
+        );
 
         return response()->json([
             'data' => $items,
@@ -26,26 +28,11 @@ class OrderItemController extends Controller
     {
         $item = $this->orderItemService->find($id);
 
+        $this->authorize('view', $item->order);
+
         return response()->json([
             'data' => $item,
         ]);
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'order_id' => ['required', 'integer', 'exists:orders,id'],
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'quantity' => ['required', 'integer', 'min:1'],
-            'unit_price' => ['required', 'numeric', 'min:0'],
-            'total_price' => ['required', 'numeric', 'min:0'],
-        ]);
-
-        $item = $this->orderItemService->create($validated);
-
-        return response()->json([
-            'message' => 'Order item created successfully',
-            'data' => $item,
-        ], 201);
-    }
 }

@@ -19,11 +19,18 @@ class OrderItemService
         ])->findOrFail($id);
     }
 
-    public function all()
+
+
+    public function allForUser(int $userId)
     {
         return OrderItem::with([
             'order',
             'product',
-        ])->latest()->get();
+        ])
+            ->whereHas('order', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->latest()
+            ->get();
     }
 }

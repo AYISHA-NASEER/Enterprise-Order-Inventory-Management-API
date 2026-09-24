@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IdempotencyKey extends Model
 {
-        protected $fillable = [
+    protected $fillable = [
         'key',
         'user_id',
+        'request_fingerprint',
         'order_id',
         'status',
     ];

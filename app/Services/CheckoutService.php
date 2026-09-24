@@ -25,10 +25,79 @@ class CheckoutService
         return DB::transaction(function () use ($userId, $idempotencyKey) {
 
             /*
-             * 1. Find and lock the user's active cart.
+             * 1. Create a fingerprint for this checkout request.
              *
-             * Locking prevents two checkout requests
-             * from processing the same cart simultaneously.
+             * The checkout endpoint currently does not receive
+             * product or quantity data in the request body.
+             *
+             * The actual products come from the user's active cart.
+             *
+             * Therefore, the fingerprint represents the endpoint
+             * and request payload.
+             */
+            $fingerprintData = [
+                'endpoint' => 'POST /api/v1/checkout',
+                'payload' => [],
+            ];
+
+            $requestFingerprint = hash(
+                'sha256',
+                json_encode($fingerprintData)
+            );
+
+            /*
+             * 2. Check the idempotency key for this user.
+             */
+            $existingKey = $this->idempotencyService->find(
+                $idempotencyKey,
+                $userId
+            );
+
+            /*
+             * Same user + same key + same request
+             * that already completed.
+             *
+             * Return the original order.
+             */
+            if (
+                $existingKey &&
+                $existingKey->request_fingerprint === $requestFingerprint &&
+                $existingKey->status === 'completed'
+            ) {
+                return Order::with('items.product')
+                    ->findOrFail($existingKey->order_id);
+            }
+
+            /*
+             * Same user + same key,
+             * but different request.
+             */
+            if (
+                $existingKey &&
+                $existingKey->request_fingerprint !== $requestFingerprint
+            ) {
+                throw new RuntimeException(
+                    'This idempotency key was already used for a different checkout request.'
+                );
+            }
+
+            /*
+             * Same request is currently being processed.
+             */
+            if (
+                $existingKey &&
+                $existingKey->status === 'processing'
+            ) {
+                throw new RuntimeException(
+                    'This checkout request is already being processed.'
+                );
+            }
+
+            /*
+             * 3. Find and lock the user's active cart.
+             *
+             * Locking prevents two checkout requests from
+             * processing the same cart simultaneously.
              */
             $cart = Cart::where('user_id', $userId)
                 ->where('status', 'active')
@@ -42,38 +111,7 @@ class CheckoutService
             }
 
             /*
-             * 2. Check the idempotency key.
-             */
-            $existingKey = $this->idempotencyService->find(
-                $idempotencyKey
-            );
-
-            /*
-             * Same request was already completed.
-             * Return the original order.
-             */
-            if (
-                $existingKey &&
-                $existingKey->status === 'completed'
-            ) {
-                return Order::with('items.product')
-                    ->findOrFail($existingKey->order_id);
-            }
-
-            /*
-             * Same request is currently processing.
-             */
-            if (
-                $existingKey &&
-                $existingKey->status === 'processing'
-            ) {
-                throw new RuntimeException(
-                    'This checkout request is already being processed.'
-                );
-            }
-
-            /*
-             * 3. Load cart items after locking the cart.
+             * 4. Load cart items.
              */
             $cart->load('items.product');
 
@@ -84,11 +122,12 @@ class CheckoutService
             }
 
             /*
-             * 4. Create the idempotency record.
+             * 5. Create the idempotency record.
              */
             $idempotency = $this->idempotencyService->create(
-                $idempotencyKey,
-                $userId
+                key: $idempotencyKey,
+                userId: $userId,
+                requestFingerprint: $requestFingerprint
             );
 
             $orderItems = [];
@@ -96,7 +135,7 @@ class CheckoutService
             $reservationIds = [];
 
             /*
-             * 5. Reserve inventory and calculate prices.
+             * 6. Reserve inventory and calculate prices.
              */
             foreach ($cart->items as $item) {
 
@@ -110,8 +149,10 @@ class CheckoutService
                 }
 
                 /*
-                 * InventoryService handles inventory
-                 * locking, stock checking and reservation.
+                 * InventoryService handles:
+                 * - inventory locking
+                 * - stock checking
+                 * - reservation creation
                  */
                 $reservation = $this->inventoryService->createReservation(
                     productId: $productId,
@@ -142,7 +183,7 @@ class CheckoutService
             }
 
             /*
-             * 6. Create the order.
+             * 7. Create the order.
              */
             $order = $this->orderService->create([
                 'user_id' => $userId,
@@ -151,7 +192,7 @@ class CheckoutService
             ]);
 
             /*
-             * 7. Attach reservations to the order.
+             * 8. Attach reservations to the order.
              */
             foreach ($reservationIds as $reservationId) {
 
@@ -162,7 +203,7 @@ class CheckoutService
             }
 
             /*
-             * 8. Create order items.
+             * 9. Create order items.
              */
             foreach ($orderItems as $orderItem) {
 
@@ -176,7 +217,7 @@ class CheckoutService
             }
 
             /*
-             * 9. Mark idempotency key as completed.
+             * 10. Mark idempotency key as completed.
              */
             $this->idempotencyService->markCompleted(
                 $idempotency,
@@ -184,17 +225,18 @@ class CheckoutService
             );
 
             /*
-             * 10. Clear the cart.
+             * 11. Clear the cart.
              *
-             * This is inside the transaction.
-             * If checkout fails, the cart deletion is rolled back.
+             * This happens inside the transaction.
+             * If checkout fails, the transaction rolls back.
              */
             $cart->items()->delete();
 
             /*
-             * Return the order with its items.
+             * 12. Return the order with its items.
              */
             return $order->load('items.product');
         });
     }
 }
+
